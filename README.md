@@ -10,8 +10,8 @@ Node.js 20 ou plus récent (testé avec Node.js 24) et npm.
 ## Installation
 
 ```bash
-git clone <lien-de-ce-dépôt>
-cd <nom-du-dossier>
+git clone https://github.com/ThiziriCHEBILI/mon-vieux-grimoire-backend.git
+cd mon-vieux-grimoire-backend
 npm install
 ```
 
@@ -19,9 +19,11 @@ npm install
 
 Copier `.env.example`, le renommer en `.env` (à côté de `package.json`), puis remplir les valeurs :
 
+```dotenv
 MONGODB_URI=<chaîne de connexion MongoDB>
 JWT_SECRET=<clé secrète>
 CORS_ORIGIN=http://localhost:3000
+```
 
 - `MONGODB_URI` : créer une base MongoDB (par exemple un cluster gratuit sur MongoDB Atlas), puis copier sa chaîne de connexion.
 - `JWT_SECRET` : une longue clé aléatoire, à générer avec :

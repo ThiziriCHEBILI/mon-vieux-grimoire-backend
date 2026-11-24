@@ -61,12 +61,14 @@ exports.createBook = async (req, res, next) => {
       .json({ message: "Les données envoyées ne sont pas un JSON valide." });
   }
 
-  // on ne fait pas confiance au front : l'id est créé par MongoDB, le userId vient du token
-  delete bookObject._id;
-  delete bookObject.userId;
+  // on garde seulement les champs que l'utilisateur peut envoyer (liste blanche)
+  const { title, author, year, genre } = bookObject ?? {};
 
   const book = new Book({
-    ...bookObject,
+    title,
+    author,
+    year,
+    genre,
     userId: req.auth.userId,
     imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
     ratings: [],

@@ -27,7 +27,9 @@ exports.signup = async (req, res, next) => {
       for (const field in error.errors) {
         errors[field] = error.errors[field].message;
       }
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Les données envoyées ne sont pas valides.", errors });
     }
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

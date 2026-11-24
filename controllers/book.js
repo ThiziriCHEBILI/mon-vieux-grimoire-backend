@@ -86,7 +86,9 @@ exports.createBook = async (req, res, next) => {
       for (const field in error.errors) {
         errors[field] = error.errors[field].message;
       }
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Les données envoyées ne sont pas valides.", errors });
     }
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -130,7 +132,7 @@ exports.modifyBook = async (req, res, next) => {
       if (req.file) fs.unlink(`images/${req.file.filename}`, () => {});
       return res
         .status(StatusCodes.FORBIDDEN)
-        .json({ message: "403: unauthorized request" });
+        .json({ message: "Vous n'avez pas le droit de modifier ce livre." });
     }
 
     // updateOne ne lance pas les validateurs par défaut
@@ -155,13 +157,16 @@ exports.modifyBook = async (req, res, next) => {
       for (const field in error.errors) {
         errors[field] = error.errors[field].message;
       }
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Les données envoyées ne sont pas valides.", errors });
     }
     // avec updateOne, une année en texte donne une CastError (pas une ValidationError)
     if (error.name === "CastError") {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ errors: { [error.path]: error.message } });
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Les données envoyées ne sont pas valides.",
+        errors: { [error.path]: error.message },
+      });
     }
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -181,7 +186,7 @@ exports.deleteBook = async (req, res, next) => {
     if (book.userId !== req.auth.userId) {
       return res
         .status(StatusCodes.FORBIDDEN)
-        .json({ message: "403: unauthorized request" });
+        .json({ message: "Vous n'avez pas le droit de supprimer ce livre." });
     }
 
     await Book.deleteOne({ _id: req.params.id });
@@ -237,7 +242,9 @@ exports.rateBook = async (req, res, next) => {
       for (const field in error.errors) {
         errors[field] = error.errors[field].message;
       }
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "Les données envoyées ne sont pas valides.", errors });
     }
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

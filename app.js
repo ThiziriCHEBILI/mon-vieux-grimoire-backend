@@ -1,7 +1,7 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
 const { StatusCodes } = require("http-status-codes");
 const userRoutes = require("./routes/user");
 const bookRoutes = require("./routes/book");

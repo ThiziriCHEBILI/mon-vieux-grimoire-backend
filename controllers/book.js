@@ -199,14 +199,6 @@ exports.deleteBook = async (req, res, next) => {
 
 // POST /api/books/:id/rating (auth) : ajoute une note et recalcule la moyenne
 exports.rateBook = async (req, res, next) => {
-  const grade = Number(req.body.rating);
-
-  if (isNaN(grade) || grade < 0 || grade > 5) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "La note doit être comprise entre 0 et 5" });
-  }
-
   try {
     const book = await Book.findOne({ _id: req.params.id });
     if (!book) {
@@ -226,7 +218,10 @@ exports.rateBook = async (req, res, next) => {
     }
 
     // le userId vient du token, pas du body
-    book.ratings.push({ userId: req.auth.userId, grade: grade });
+    book.ratings.push({ userId: req.auth.userId, grade: req.body?.rating });
+
+    // vérifie la note avec les règles du modèle, avant de calculer la moyenne
+    await book.validate();
 
     // moyenne arrondie à 1 chiffre après la virgule
     const total = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
@@ -235,6 +230,13 @@ exports.rateBook = async (req, res, next) => {
     const updatedBook = await book.save();
     res.status(StatusCodes.OK).json(updatedBook);
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = {};
+      for (const field in error.errors) {
+        errors[field] = error.errors[field].message;
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json({ errors });
+    }
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "Erreur du serveur." });

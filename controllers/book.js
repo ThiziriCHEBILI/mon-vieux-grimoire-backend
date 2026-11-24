@@ -1,6 +1,8 @@
+const path = require("path");
 const fs = require("fs");
 const Book = require("../models/Book");
 const { StatusCodes } = require("http-status-codes");
+const IMAGES_DIR = path.join(__dirname, "..", "images");
 
 // GET /api/books (public)
 exports.getAllBooks = async (req, res, next) => {
@@ -55,7 +57,7 @@ exports.createBook = async (req, res, next) => {
   try {
     bookObject = JSON.parse(req.body.book);
   } catch (error) {
-    fs.unlink(`images/${req.file.filename}`, () => {});
+    fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Les données envoyées ne sont pas un JSON valide." });
@@ -80,7 +82,7 @@ exports.createBook = async (req, res, next) => {
     res.status(StatusCodes.CREATED).json({ message: "Livre enregistré !" });
   } catch (error) {
     // le livre n'est pas enregistré : on supprime l'image pour ne pas la laisser orpheline
-    fs.unlink(`images/${req.file.filename}`, () => {});
+    fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
     if (error.name === "ValidationError") {
       const errors = {};
       for (const field in error.errors) {
@@ -108,7 +110,7 @@ exports.modifyBook = async (req, res, next) => {
         }
       : { ...req.body };
   } catch (error) {
-    fs.unlink(`images/${req.file.filename}`, () => {});
+    fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Les données envoyées ne sont pas un JSON valide." });
@@ -123,13 +125,15 @@ exports.modifyBook = async (req, res, next) => {
   try {
     const book = await Book.findOne({ _id: req.params.id });
     if (!book) {
-      if (req.file) fs.unlink(`images/${req.file.filename}`, () => {});
+      if (req.file)
+        fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
       return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Livre non trouvé" });
     }
     if (book.userId !== req.auth.userId) {
-      if (req.file) fs.unlink(`images/${req.file.filename}`, () => {});
+      if (req.file)
+        fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
       return res
         .status(StatusCodes.FORBIDDEN)
         .json({ message: "Vous n'avez pas le droit de modifier ce livre." });
@@ -145,13 +149,13 @@ exports.modifyBook = async (req, res, next) => {
     // la modification a réussi : on peut supprimer l'ancienne image
     if (req.file) {
       const oldFilename = book.imageUrl.split("/images/")[1];
-      fs.unlink(`images/${oldFilename}`, (error) => {
+      fs.unlink(path.join(IMAGES_DIR, oldFilename), (error) => {
         if (error) console.log(error);
       });
     }
     res.status(StatusCodes.OK).json({ message: "Livre modifié !" });
   } catch (error) {
-    if (req.file) fs.unlink(`images/${req.file.filename}`, () => {});
+    if (req.file) fs.unlink(path.join(IMAGES_DIR, req.file.filename), () => {});
     if (error.name === "ValidationError") {
       const errors = {};
       for (const field in error.errors) {
@@ -193,7 +197,7 @@ exports.deleteBook = async (req, res, next) => {
 
     // le livre est supprimé : on peut supprimer son image
     const filename = book.imageUrl.split("/images/")[1];
-    fs.unlink(`images/${filename}`, (error) => {
+    fs.unlink(path.join(IMAGES_DIR, filename), (error) => {
       if (error) console.log(error);
     });
     res.status(StatusCodes.OK).json({ message: "Livre supprimé !" });

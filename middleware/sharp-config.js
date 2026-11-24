@@ -14,7 +14,7 @@ module.exports = async (req, res, next) => {
     await sharp(req.file.buffer)
       .resize({ width: 500, withoutEnlargement: true })
       .webp({ quality: 80 })
-      .toFile(path.join("images", filename));
+      .toFile(path.join(__dirname, "..", "images", filename));
   } catch (error) {
     return res
       .status(StatusCodes.BAD_REQUEST)
